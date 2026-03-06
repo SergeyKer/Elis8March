@@ -401,7 +401,8 @@
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         
         // Более надежная проверка на встроенные браузеры мессенджеров (Telegram, VK, Instagram и любые Android WebView)
-        const isWebView = /Telegram|Instagram|FBAN|FBAV|VK|Viber|wv\)/i.test(navigator.userAgent);
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        const isWebView = /Telegram|Instagram|FBAN|FBAV|VK|Viber|\bwv\b/i.test(ua) || /Android.*Version\/[\d\.]+.*Chrome/i.test(ua);
         
         if (isMobile) {
           // ДЛЯ ТЕЛЕФОНОВ: Показываем картинку и умную кнопку
