@@ -387,7 +387,7 @@
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
         if (isMobile) {
-          // ДЛЯ ТЕЛЕФОНОВ: Показываем картинку на весь экран, чтобы пользователь ее зажал пальцем
+          // ДЛЯ ТЕЛЕФОНОВ: Показываем картинку и кнопку "Поделиться"
           let modal = document.getElementById('mobileImageModal');
           if (!modal) {
             modal = document.createElement('div');
@@ -408,13 +408,44 @@
           }
           
           modal.innerHTML = `
-            <p style="color: white; font-family: 'Nunito', sans-serif; font-size: 1.1rem; text-align: center; margin-bottom: 20px; font-weight: 800;">
-              ✨ Ваша открытка готова! ✨<br><br>Нажмите и удерживайте картинку, чтобы сохранить её в галерею или переслать.
+            <p style="color: white; font-family: 'Nunito', sans-serif; font-size: 1.1rem; text-align: center; margin-bottom: 15px; font-weight: 800;">
+              ✨ Ваша открытка готова! ✨<br>
+              <span style="font-size: 0.9rem; font-weight: 600; opacity: 0.8;">Нажмите кнопку ниже или зажмите картинку пальцем</span>
             </p>
-            <img src="${imgData}" style="max-width: 100%; max-height: 65vh; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <button onclick="document.getElementById('mobileImageModal').style.display='none'" style="margin-top: 30px; padding: 12px 30px; background: #ff1493; color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer;">Вернуться</button>
+            <img src="${imgData}" style="max-width: 100%; max-height: 55vh; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <button id="nativeShareBtn" style="margin-top: 25px; padding: 14px 30px; background: linear-gradient(135deg, #00c6ff, #0072ff); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 114, 255, 0.4);">🚀 Поделиться / Сохранить</button>
+            <button onclick="document.getElementById('mobileImageModal').style.display='none'" style="margin-top: 15px; padding: 10px 30px; background: transparent; color: #ffb6c1; border: 2px solid #ffb6c1; border-radius: 12px; font-size: 1rem; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer;">Вернуться</button>
           `;
           modal.style.display = 'flex';
+
+          // Обработчик для умного сохранения/шаринга через систему
+          document.getElementById('nativeShareBtn').onclick = function() {
+            try {
+              // Конвертируем base64 в настоящий файл картинки
+              const arr = imgData.split(',');
+              const mime = arr[0].match(/:(.*?);/)[1];
+              const bstr = atob(arr[1]);
+              let n = bstr.length;
+              const u8arr = new Uint8Array(n);
+              while(n--) { u8arr[n] = bstr.charCodeAt(n); }
+              
+              const name = document.getElementById('cardGreeting').textContent.replace('Дорогая ', '').replace('!', '').trim() || 'Имя';
+              const file = new File([u8arr], 'Otkrytka_' + name + '.jpg', {type: mime});
+              
+              // Если телефон поддерживает системное окно "Поделиться"
+              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({
+                  files: [file],
+                  title: 'С 8 Марта!',
+                  text: 'Поздравляю с 8 Марта!'
+                }).catch(err => console.log('Share canceled or failed', err));
+              } else {
+                alert('К сожалению, ваш браузер (внутри Телеграма) блокирует быстрое скачивание. Пожалуйста, зажмите саму картинку пальцем и выберите "Сохранить" или откройте ссылку в браузере Safari/Chrome.');
+              }
+            } catch(e) {
+              alert('Пожалуйста, просто зажмите картинку пальцем и выберите "Сохранить в галерею".');
+            }
+          };
           
         } else {
           // ДЛЯ КОМПЬЮТЕРОВ: Скачиваем файл как обычно
