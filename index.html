@@ -252,8 +252,9 @@
     
     <!-- Кнопка сохранения (она в картинку не попадёт) -->
     <button type="button" class="save-btn" onclick="saveAsJPG()">Сохранить открытку</button>
-    <div style="margin-top: 15px;">
-      <a href="#" onclick="resetCard(event)" style="color: #ff69b4; text-decoration: none; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 600; border-bottom: 1px dashed #ff69b4; transition: color 0.2s;">Создать новую открытку</a>
+    <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px; align-items: center;">
+      <a href="#" onclick="regenerateText(event)" style="color: #00c6ff; text-decoration: none; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 600; border-bottom: 1px dashed #00c6ff; transition: color 0.2s;">Сгенерировать другой текст</a>
+      <a href="#" onclick="resetCard(event)" style="color: #ff69b4; text-decoration: none; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 600; border-bottom: 1px dashed #ff69b4; transition: color 0.2s;">Создать новую открытку (ввести другое имя)</a>
     </div>
   </div>
 
@@ -426,9 +427,7 @@
             document.body.appendChild(modal);
           }
           
-          // Так как некоторые версии Telegram полностью маскируются под обычный браузер и скрывают свой User-Agent, 
-          // мы выводим универсальную аккуратную подсказку для всех мобильных пользователей
-          let subText = "Нажмите кнопку ниже или зажмите картинку пальцем.<br><br><span style='font-size: 0.85rem; color: rgba(255,255,255,0.8); line-height: 1.2; display: inline-block;'>⚠️ Если вы открыли сайт внутри мессенджера (Telegram/ВК) и кнопка не работает — нажмите на три точки (меню) и выберите <b>«Открыть в браузере»</b>.</span>";
+          let subText = "Нажмите кнопку ниже или зажмите картинку пальцем.";
           
           modal.innerHTML = `
             <p style="color: white; font-family: 'Nunito', sans-serif; font-size: 1.1rem; text-align: center; margin-bottom: 15px; font-weight: 800;">
@@ -485,6 +484,14 @@
         saveBtn.style.opacity = '1';
         alert("Произошла ошибка при создании открытки. Попробуйте еще раз.");
       });
+    }
+
+    // Функция для генерации нового случайного текста
+    window.regenerateText = function(event) {
+      if (event) event.preventDefault();
+      const randomIndex = Math.floor(Math.random() * congratulations.length);
+      // Чтобы дважды подряд не выпал один и тот же текст, можно добавить проверку, но для простоты оставляем так
+      document.getElementById('cardText').textContent = congratulations[randomIndex];
     }
 
     // Функция для возврата на стартовый экран
