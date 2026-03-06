@@ -399,7 +399,9 @@
         // Проверяем, мобильное ли это устройство (или встроенный браузер типа Telegram/ВК)
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isTelegram = /Telegram/i.test(navigator.userAgent);
+        
+        // Более надежная проверка на встроенные браузеры мессенджеров (Telegram, VK, Instagram и любые Android WebView)
+        const isWebView = /Telegram|Instagram|FBAN|FBAV|VK|Viber|wv\)/i.test(navigator.userAgent);
         
         if (isMobile) {
           // ДЛЯ ТЕЛЕФОНОВ: Показываем картинку и умную кнопку
@@ -423,8 +425,8 @@
           }
           
           let subText = "Нажмите кнопку ниже или зажмите картинку пальцем";
-          if (isTelegram) {
-            subText = "⚠️ Пожалуйста, откройте эту страницу в основном браузере (не в Telegram), чтобы сохранить открытку. Нажмите на меню (три точки в углу) и выберите <b>«Открыть в браузере»</b>.";
+          if (isWebView) {
+            subText = "⚠️ Встроенные браузеры (как в Telegram) часто блокируют сохранение. Пожалуйста, нажмите на меню (три точки в углу) и выберите <b>«Открыть в браузере»</b> (Chrome/Safari).";
           }
           
           modal.innerHTML = `
@@ -440,9 +442,9 @@
 
           // Обработчик для умного сохранения/шаринга через систему
           document.getElementById('actionBtn').onclick = function() {
-            if (isTelegram && !isIOS) {
-                // В Android Telegram WebView скачивание/шаринг файлов сломано
-                alert("Из-за ограничений Telegram скачивание может не работать. Зажмите картинку пальцем и выберите 'Сохранить' ИЛИ откройте эту страницу в Chrome (через меню в правом верхнем углу).");
+            if (isWebView && !isIOS) {
+                // В Android WebView скачивание/шаринг файлов часто ломается
+                alert("Похоже, вы находитесь во встроенном браузере мессенджера. Из-за его ограничений скачивание может не сработать. Зажмите картинку пальцем и выберите 'Сохранить' ИЛИ откройте страницу в Chrome (через меню в правом верхнем углу).");
             }
 
             try {
