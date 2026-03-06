@@ -374,6 +374,19 @@
       }).then(canvas => {
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         
+        // Превращаем dataURL в Blob (решает проблемы скачивания и долгого нажатия в WebView/Telegram)
+        const arr = imgData.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while(n--) { u8arr[n] = bstr.charCodeAt(n); }
+        const blob = new Blob([u8arr], {type: mime});
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const rawName = document.getElementById('cardGreeting').textContent.replace('Дорогая ', '').replace('!', '').trim() || 'Имя';
+        const fileName = 'Otkrytka_' + rawName + '.jpg';
+
         // Возвращаем кнопку в нормальное состояние
         saveBtn.textContent = originalBtnText;
         saveBtn.style.opacity = '1';
@@ -385,9 +398,23 @@
 
         // Проверяем, мобильное ли это устройство (или встроенный браузер типа Telegram/ВК)
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        
+        // Превращаем dataURL в Blob (решает проблемы скачивания и долгого нажатия в WebView/Telegram)
+        const arr = imgData.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while(n--) { u8arr[n] = bstr.charCodeAt(n); }
+        const blob = new Blob([u8arr], {type: mime});
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const rawName = document.getElementById('cardGreeting').textContent.replace('Дорогая ', '').replace('!', '').trim() || 'Имя';
+        const fileName = 'Otkrytka_' + rawName + '.jpg';
         
         if (isMobile) {
-          // ДЛЯ ТЕЛЕФОНОВ: Показываем картинку и кнопку "Поделиться"
+          // ДЛЯ ТЕЛЕФОНОВ: Показываем картинку и умную кнопку
           let modal = document.getElementById('mobileImageModal');
           if (!modal) {
             modal = document.createElement('div');
@@ -412,35 +439,38 @@
               ✨ Ваша открытка готова! ✨<br>
               <span style="font-size: 0.9rem; font-weight: 600; opacity: 0.8;">Нажмите кнопку ниже или зажмите картинку пальцем</span>
             </p>
-            <img src="${imgData}" style="max-width: 100%; max-height: 55vh; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <button id="nativeShareBtn" style="margin-top: 25px; padding: 14px 30px; background: linear-gradient(135deg, #00c6ff, #0072ff); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 114, 255, 0.4);">🚀 Поделиться / Сохранить</button>
+            <img src="${blobUrl}" style="max-width: 100%; max-height: 55vh; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto;">
+            <button id="actionBtn" style="margin-top: 25px; padding: 14px 30px; background: linear-gradient(135deg, #00c6ff, #0072ff); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 114, 255, 0.4); width: 85%;">🚀 Сохранить / Поделиться</button>
             <button onclick="document.getElementById('mobileImageModal').style.display='none'" style="margin-top: 15px; padding: 10px 30px; background: transparent; color: #ffb6c1; border: 2px solid #ffb6c1; border-radius: 12px; font-size: 1rem; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer;">Вернуться</button>
           `;
           modal.style.display = 'flex';
 
           // Обработчик для умного сохранения/шаринга через систему
-          document.getElementById('nativeShareBtn').onclick = function() {
+          document.getElementById('actionBtn').onclick = function() {
             try {
-              // Конвертируем base64 в настоящий файл картинки
-              const arr = imgData.split(',');
-              const mime = arr[0].match(/:(.*?);/)[1];
-              const bstr = atob(arr[1]);
-              let n = bstr.length;
-              const u8arr = new Uint8Array(n);
-              while(n--) { u8arr[n] = bstr.charCodeAt(n); }
+              const file = new File([u8arr], fileName, {type: mime});
               
-              const name = document.getElementById('cardGreeting').textContent.replace('Дорогая ', '').replace('!', '').trim() || 'Имя';
-              const file = new File([u8arr], 'Otkrytka_' + name + '.jpg', {type: mime});
-              
-              // Если телефон поддерживает системное окно "Поделиться"
-              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              // На iOS функция Share работает лучше всего (сохраняет прямо в Фото галерею)
+              if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) {
                 navigator.share({
                   files: [file],
-                  title: 'С 8 Марта!',
-                  text: 'Поздравляю с 8 Марта!'
-                }).catch(err => console.log('Share canceled or failed', err));
+                  title: 'С 8 Марта!'
+                }).catch(err => {
+                  console.log('Share canceled or failed', err);
+                  // Если Share отменен или заблокирован, пробуем обычное скачивание (в Файлы)
+                  if (err.name !== 'AbortError') {
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = fileName;
+                    a.click();
+                  }
+                });
               } else {
-                alert('К сожалению, ваш браузер (внутри Телеграма) блокирует быстрое скачивание. Пожалуйста, зажмите саму картинку пальцем и выберите "Сохранить" или откройте ссылку в браузере Safari/Chrome.');
+                // На Android (включая Telegram WebView) прямое скачивание Blob-ссылки перехватывается системным загрузчиком
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = fileName;
+                a.click();
               }
             } catch(e) {
               alert('Пожалуйста, просто зажмите картинку пальцем и выберите "Сохранить в галерею".');
@@ -450,9 +480,8 @@
         } else {
           // ДЛЯ КОМПЬЮТЕРОВ: Скачиваем файл как обычно
           const link = document.createElement('a');
-          link.href = imgData;
-          const name = document.getElementById('cardGreeting').textContent.replace('Дорогая ', '').replace('!', '');
-          link.download = 'Открытка_' + name + '.jpg';
+          link.href = blobUrl;
+          link.download = fileName;
           link.click();
         }
       }).catch(err => {
