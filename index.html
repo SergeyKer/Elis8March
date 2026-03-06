@@ -252,6 +252,9 @@
     
     <!-- Кнопка сохранения (она в картинку не попадёт) -->
     <button type="button" class="save-btn" onclick="saveAsJPG()">Сохранить открытку</button>
+    <div style="margin-top: 15px;">
+      <a href="#" onclick="resetCard(event)" style="color: #ff69b4; text-decoration: none; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 600; border-bottom: 1px dashed #ff69b4; transition: color 0.2s;">Создать новую открытку</a>
+    </div>
   </div>
 
   <script>
@@ -425,6 +428,30 @@
         saveBtn.textContent = originalBtnText;
         saveBtn.style.opacity = '1';
         alert("Произошла ошибка при создании открытки. Попробуйте еще раз.");
+      });
+    }
+
+    // Функция для возврата на стартовый экран
+    window.resetCard = function(event) {
+      event.preventDefault(); // Предотвращаем прыжок страницы наверх из-за href="#"
+      // Очищаем память, чтобы при обновлении не загружалась старая открытка
+      try {
+        sessionStorage.removeItem('cardName');
+      } catch(e) {}
+      
+      // Показываем форму и скрываем открытку
+      document.getElementById('cardSection').style.display = 'none';
+      document.getElementById('formSection').style.display = 'block';
+      
+      // Очищаем поле ввода для нового имени
+      document.getElementById('nameInput').value = '';
+      
+      // Убираем возможные блокирующие стили из head (если страница была загружена сразу с открыткой)
+      const dynamicStyles = document.querySelectorAll('style');
+      dynamicStyles.forEach(style => {
+        if (style.innerHTML.includes('#formSection')) {
+          style.remove();
+        }
       });
     }
   </script>
