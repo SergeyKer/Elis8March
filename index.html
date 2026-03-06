@@ -402,7 +402,8 @@
         
         // Более надежная проверка на встроенные браузеры мессенджеров (Telegram, VK, Instagram и любые Android WebView)
         const ua = navigator.userAgent || navigator.vendor || window.opera;
-        const isWebView = /Telegram|Instagram|FBAN|FBAV|VK|Viber|\bwv\b/i.test(ua) || /Android.*Version\/[\d\.]+.*Chrome/i.test(ua);
+        // Расширенная проверка на Telegram (иногда он скрывает свой User-Agent, но оставляет объекты в window или маркеры wv)
+        const isTelegramOrWebView = /Telegram|Instagram|FBAN|FBAV|VK|Viber|wv/i.test(ua) || /Android.*Version\/[\d\.]+.*Chrome/i.test(ua) || (typeof window.TelegramWebviewProxy !== "undefined");
         
         if (isMobile) {
           // ДЛЯ ТЕЛЕФОНОВ: Показываем картинку и умную кнопку
@@ -425,15 +426,14 @@
             document.body.appendChild(modal);
           }
           
-          let subText = "Нажмите кнопку ниже или зажмите картинку пальцем";
-          if (isWebView) {
-            subText = "⚠️ Встроенные браузеры (как в Telegram) часто блокируют сохранение. Пожалуйста, нажмите на меню (три точки в углу) и выберите <b>«Открыть в браузере»</b> (Chrome/Safari).";
-          }
+          // Так как некоторые версии Telegram полностью маскируются под обычный браузер и скрывают свой User-Agent, 
+          // мы выводим универсальную аккуратную подсказку для всех мобильных пользователей
+          let subText = "Нажмите кнопку ниже или зажмите картинку пальцем.<br><br><span style='font-size: 0.85rem; color: rgba(255,255,255,0.8); line-height: 1.2; display: inline-block;'>⚠️ Если вы открыли сайт внутри мессенджера (Telegram/ВК) и кнопка не работает — нажмите на три точки (меню) и выберите <b>«Открыть в браузере»</b>.</span>";
           
           modal.innerHTML = `
             <p style="color: white; font-family: 'Nunito', sans-serif; font-size: 1.1rem; text-align: center; margin-bottom: 15px; font-weight: 800;">
               ✨ Ваша открытка готова! ✨<br>
-              <span style="font-size: 0.9rem; font-weight: 600; opacity: 0.9; line-height: 1.3; display: inline-block; margin-top: 5px;">${subText}</span>
+              <span style="font-size: 0.95rem; font-weight: 600; opacity: 0.9; line-height: 1.3; display: inline-block; margin-top: 10px;">${subText}</span>
             </p>
             <img src="${blobUrl}" style="max-width: 100%; max-height: 55vh; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto;">
             <button id="actionBtn" style="margin-top: 25px; padding: 14px 30px; background: linear-gradient(135deg, #00c6ff, #0072ff); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 114, 255, 0.4); width: 85%;">Сохранить</button>
@@ -443,11 +443,6 @@
 
           // Обработчик для умного сохранения/шаринга через систему
           document.getElementById('actionBtn').onclick = function() {
-            if (isWebView && !isIOS) {
-                // В Android WebView скачивание/шаринг файлов часто ломается
-                alert("Похоже, вы находитесь во встроенном браузере мессенджера. Из-за его ограничений скачивание может не сработать. Зажмите картинку пальцем и выберите 'Сохранить' ИЛИ откройте страницу в Chrome (через меню в правом верхнем углу).");
-            }
-
             try {
               const file = new File([u8arr], fileName, {type: mime});
               
