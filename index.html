@@ -399,6 +399,7 @@
         // Проверяем, мобильное ли это устройство (или встроенный браузер типа Telegram/ВК)
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isTelegram = /Telegram/i.test(navigator.userAgent);
         
         if (isMobile) {
           // ДЛЯ ТЕЛЕФОНОВ: Показываем картинку и умную кнопку
@@ -439,7 +440,6 @@
 
           // Обработчик для умного сохранения/шаринга через систему
           document.getElementById('actionBtn').onclick = function() {
-            const isTelegram = /Telegram/i.test(navigator.userAgent);
             if (isTelegram && !isIOS) {
                 // В Android Telegram WebView скачивание/шаринг файлов сломано
                 alert("Из-за ограничений Telegram скачивание может не работать. Зажмите картинку пальцем и выберите 'Сохранить' ИЛИ откройте эту страницу в Chrome (через меню в правом верхнем углу).");
