@@ -482,8 +482,7 @@
               // На iOS функция Share работает лучше всего (сохраняет прямо в Фото галерею)
               if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) {
                 navigator.share({
-                  files: [file],
-                  title: 'С 8 Марта!'
+                  files: [file]
                 }).catch(err => {
                   console.log('Share canceled or failed', err);
                   // Если Share отменен или заблокирован, пробуем обычное скачивание (в Файлы)
