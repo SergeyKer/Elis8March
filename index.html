@@ -5,17 +5,8 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Открытка к 8 Марта</title>
-  
-  <!-- Предзагрузка соединений для шрифтов и картинок -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  
-  <!-- Подключаем милый округлый шрифт -->
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap" rel="stylesheet">
-
-  <!-- Подключаем библиотеку для конвертации HTML в картинку (defer не блокирует рендеринг) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+  <!-- Подключаем библиотеку для конвертации HTML в картинку -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
     // Моментально скрываем форму и показываем открытку, если есть сохраненное имя, чтобы избежать моргания экрана
     try {
@@ -28,12 +19,14 @@
   </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Подключаем милый округлый шрифт для мультяшного эффекта */
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap');
 
     body {
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
-      padding: 40px 20px;
+      align-items: center;
+      justify-content: center;
       font-family: 'Nunito', 'Comic Sans MS', sans-serif;
       /* Спокойный, однотонный матовый фон без точек */
       background-color: #f2e9ed;
@@ -41,7 +34,6 @@
     
     /* Стили для формы */
     .form-container {
-      margin: auto;
       width: 380px;
       padding: 30px;
       background: #fff;
@@ -84,7 +76,6 @@
 
     /* Контейнер для отображения после создания (обертка для открытки и кнопки) */
     #cardSection {
-      margin: auto;
       display: none;
       flex-direction: column;
       align-items: center;
@@ -138,7 +129,6 @@
       width: 38px; /* Уменьшено на 30% (было 55px) */
       height: 38px; /* Уменьшено на 30% (было 55px) */
       animation: float 3s infinite ease-in-out;
-      will-change: transform;
     }
     .flowers img:nth-child(even) { animation-delay: 1.5s; }
     .flowers img:nth-child(3n) { animation-delay: 0.7s; }
@@ -164,6 +154,16 @@
     .card-content-inner {
       position: relative;
       z-index: 1;
+    }
+
+    /* Стили для логотипа компании */
+    .company-logo {
+      position: absolute;
+      bottom: 8px;
+      left: 20px;
+      width: 150px; /* Небольшой размер */
+      opacity: 0.3; /* Делает логотип полупрозрачным и малозаметным */
+      z-index: 2;
     }
 
     /* Стили для кнопки сохранения */
@@ -254,7 +254,7 @@
           <img id="purpleTulip" src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f337.png" crossorigin="anonymous" alt="purple tulip" style="filter: hue-rotate(270deg); -webkit-filter: hue-rotate(270deg);">
         </div>
       </div>
-     
+          
     <!-- Кнопка сохранения (она в картинку не попадёт) -->
     <button type="button" class="save-btn" onclick="saveAsJPG()">Сохранить открытку</button>
     <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px; align-items: center;">
